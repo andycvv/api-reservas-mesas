@@ -1,11 +1,16 @@
 package com.cibertec.api_reservas_mesas.model;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class Usuario {
@@ -21,6 +26,14 @@ public class Usuario {
 	private boolean estado;
 	@Enumerated(EnumType.STRING)
 	private Rol rol;
+
+	@OneToMany(mappedBy = "usuario")
+	@JsonIgnore
+	private List<Reserva> reservas;
+
+	@OneToMany(mappedBy = "usuario")
+	@JsonIgnore
+	private List<Asistencia> asistencias;
 
 	public Integer getId() {
 		return id;
@@ -93,4 +106,22 @@ public class Usuario {
 	public void setRol(Rol rol) {
 		this.rol = rol;
 	}
+
+	public List<Reserva> getReservas() {
+		return reservas;
+	}
+
+	public void setReservas(List<Reserva> reservas) {
+		this.reservas = reservas;
+	}
+
+	public List<Asistencia> getAsistencias() {
+		return asistencias;
+	}
+
+	public void setAsistencias(List<Asistencia> asistencias) {
+		this.asistencias = asistencias;
+	}
+	
+	
 }
