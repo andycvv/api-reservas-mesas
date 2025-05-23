@@ -17,6 +17,7 @@ public class Ubicacion {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	private String nombre;
+	private boolean estado;
 	
 	@OneToMany(mappedBy = "ubicacion")
 	@JsonIgnore
@@ -45,6 +46,13 @@ public class Ubicacion {
 	public void setMesas(List<Mesa> mesas) {
 		this.mesas = mesas;
 	}
-	
+
+	public boolean getEstado() {
+		return estado;
+	}
+
+	public void setEstado(boolean estado) {
+		this.estado = estado;
+	}
 	
 }
