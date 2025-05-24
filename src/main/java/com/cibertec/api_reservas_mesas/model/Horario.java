@@ -19,6 +19,7 @@ public class Horario {
 	private Integer id;
 	private LocalTime horaInicio;
 	private LocalTime horaFin;
+	private boolean estado;
 	
 	@OneToMany(mappedBy = "horario")
 	@JsonIgnore
@@ -46,6 +47,14 @@ public class Horario {
 
 	public void setHoraFin(LocalTime horaFin) {
 		this.horaFin = horaFin;
+	}
+
+	public boolean getEstado() {
+		return estado;
+	}
+
+	public void setEstado(boolean estado) {
+		this.estado = estado;
 	}
 
 	public List<Reserva> getReservas() {
