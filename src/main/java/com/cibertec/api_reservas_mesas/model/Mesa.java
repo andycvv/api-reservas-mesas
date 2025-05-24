@@ -18,8 +18,9 @@ public class Mesa {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	private String nombre;
+	private int numero;
 	private int capacidad;
+	private boolean estado;
 	
 	@ManyToOne
 	@JoinColumn(name = "ubicacion_id")
@@ -37,12 +38,12 @@ public class Mesa {
 		this.id = id;
 	}
 
-	public String getNombre() {
-		return nombre;
+	public int getNumero() {
+		return numero;
 	}
 
-	public void setNombre(String nombre) {
-		this.nombre = nombre;
+	public void setNumero(int numero) {
+		this.numero = numero;
 	}
 
 	public int getCapacidad() {
@@ -67,6 +68,14 @@ public class Mesa {
 
 	public void setReservas(List<Reserva> reservas) {
 		this.reservas = reservas;
+	}
+
+	public boolean getEstado() {
+		return estado;
+	}
+
+	public void setEstado(boolean estado) {
+		this.estado = estado;
 	}
 	
 	
