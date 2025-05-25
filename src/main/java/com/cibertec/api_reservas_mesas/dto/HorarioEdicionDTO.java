@@ -2,10 +2,15 @@ package com.cibertec.api_reservas_mesas.dto;
 
 import java.time.LocalTime;
 
+import jakarta.validation.constraints.NotNull;
+
 public class HorarioEdicionDTO {
+	@NotNull(message = "El campo horaInicio es obligatorio")
 	private LocalTime horaInicio;
+	@NotNull(message = "El campo horaFin es obligatorio")
 	private LocalTime horaFin;
-	private boolean estado;
+	@NotNull(message = "El campo estado es obligatorio")
+	private Boolean estado;
 	
 	public LocalTime getHoraInicio() {
 		return horaInicio;

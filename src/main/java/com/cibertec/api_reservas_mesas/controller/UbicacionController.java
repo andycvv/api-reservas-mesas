@@ -21,6 +21,8 @@ import com.cibertec.api_reservas_mesas.dto.UbicacionEdicionDTO;
 import com.cibertec.api_reservas_mesas.model.Ubicacion;
 import com.cibertec.api_reservas_mesas.repository.UbicacionRepository;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/ubicaciones")
 public class UbicacionController {
@@ -78,7 +80,7 @@ public class UbicacionController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<Void> post(@RequestBody UbicacionCreacionDTO ubicacionCreacionDTO) {
+	public ResponseEntity<Void> post(@RequestBody @Valid UbicacionCreacionDTO ubicacionCreacionDTO) {
 		Ubicacion u = new Ubicacion();
 		u.setNombre(ubicacionCreacionDTO.getNombre());
 		u.setEstado(true);
@@ -88,7 +90,7 @@ public class UbicacionController {
 	}
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<Void> put(@PathVariable int id, @RequestBody UbicacionEdicionDTO ubicacionEdicionDTO) {
+	public ResponseEntity<Void> put(@PathVariable int id, @RequestBody @Valid UbicacionEdicionDTO ubicacionEdicionDTO) {
 		Ubicacion u = repo.findById(id).orElse(null);
 		
 		if (u == null) {
