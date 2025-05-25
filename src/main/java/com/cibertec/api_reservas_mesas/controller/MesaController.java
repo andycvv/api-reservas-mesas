@@ -23,6 +23,8 @@ import com.cibertec.api_reservas_mesas.model.Ubicacion;
 import com.cibertec.api_reservas_mesas.repository.MesaRepository;
 import com.cibertec.api_reservas_mesas.repository.UbicacionRepository;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/mesas")
 public class MesaController {
@@ -69,7 +71,7 @@ public class MesaController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<Void> post(@RequestBody MesaCreacionDTO mesaCreacionDTO) {
+	public ResponseEntity<Void> post(@RequestBody @Valid MesaCreacionDTO mesaCreacionDTO) {
 		Ubicacion u = ubicacionRepository
 				.findById(mesaCreacionDTO.getUbicacionId())
 				.orElse(null);
@@ -91,7 +93,7 @@ public class MesaController {
 	}
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<Void> put(@PathVariable int id, @RequestBody MesaEdicionDTO mesaEdicionDTO){
+	public ResponseEntity<Void> put(@PathVariable int id, @RequestBody @Valid MesaEdicionDTO mesaEdicionDTO){
 		Mesa m = mesaRepository.findById(id).orElse(null);
 		
 		if(m == null) {
