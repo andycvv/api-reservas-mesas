@@ -17,8 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cibertec.api_reservas_mesas.dto.HorarioCreacionDTO;
 import com.cibertec.api_reservas_mesas.dto.HorarioDTO;
 import com.cibertec.api_reservas_mesas.dto.HorarioEdicionDTO;
+import com.cibertec.api_reservas_mesas.exception.RangoHorarioInvalidoException;
 import com.cibertec.api_reservas_mesas.model.Horario;
 import com.cibertec.api_reservas_mesas.repository.HorarioRepository;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/horarios")
@@ -61,7 +64,12 @@ public class HorarioController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<Void> post(@RequestBody HorarioCreacionDTO horarioCreacionDTO) {
+	public ResponseEntity<Void> post(@RequestBody @Valid HorarioCreacionDTO horarioCreacionDTO) {
+		if (!horarioCreacionDTO.getHoraInicio().isBefore(horarioCreacionDTO.getHoraFin())) {
+			throw new RangoHorarioInvalidoException("horaInicio", 
+					"La hora de inicio debe ser anterior a la hora de fin");
+		}
+		
 		Horario horario = new Horario();
 		horario.setHoraInicio(horarioCreacionDTO.getHoraInicio());
 		horario.setHoraFin(horarioCreacionDTO.getHoraFin());
@@ -72,7 +80,7 @@ public class HorarioController {
 	}
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<Void> put(@PathVariable int id, @RequestBody HorarioEdicionDTO horarioEdicionDTO) {
+	public ResponseEntity<Void> put(@PathVariable int id, @RequestBody @Valid HorarioEdicionDTO horarioEdicionDTO) {
 		Horario horario = horarioRepository.findById(id).orElse(null);
 		
 		if (horario == null) {
