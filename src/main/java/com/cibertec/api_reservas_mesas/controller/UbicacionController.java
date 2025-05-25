@@ -43,6 +43,24 @@ public class UbicacionController {
 		return ResponseEntity.ok(ubicaciones);
 	}
 	
+	@GetMapping("/activos")
+	public ResponseEntity<List<UbicacionDTO>> getActivos() {
+		List<UbicacionDTO> ubicaciones = new ArrayList<>();
+		
+		for (Ubicacion u : repo.findAll()) {
+			if(u.getEstado()) {
+				UbicacionDTO dto = new UbicacionDTO();
+				dto.setId(u.getId());
+				dto.setNombre(u.getNombre());
+				dto.setEstado(u.getEstado());
+				
+				ubicaciones.add(dto);
+			}
+		}
+		
+		return ResponseEntity.ok(ubicaciones);
+	}
+	
 	@GetMapping("/{id}")
 	public ResponseEntity<UbicacionDTO> getById(@PathVariable int id) {
 		Ubicacion u = repo.findById(id).orElse(null);
