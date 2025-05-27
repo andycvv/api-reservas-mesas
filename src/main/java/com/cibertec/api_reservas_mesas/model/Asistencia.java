@@ -2,12 +2,17 @@ package com.cibertec.api_reservas_mesas.model;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 
 @Entity
 public class Asistencia {
@@ -15,13 +20,16 @@ public class Asistencia {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
+	@CreationTimestamp
 	private LocalDateTime fechaAsistencia;
+	@Enumerated(EnumType.STRING)
+	private EstadoAsistencia estado;
 	
 	@ManyToOne
-	@JoinColumn(name = "usuario_id")
-	private Usuario usuario;
+	@JoinColumn(name = "asistente_id")
+	private Usuario asistente;
 	
-	@ManyToOne
+	@OneToOne
 	@JoinColumn(name = "reserva_id")
 	private Reserva reserva;
 
@@ -41,12 +49,20 @@ public class Asistencia {
 		this.fechaAsistencia = fechaAsistencia;
 	}
 
-	public Usuario getUsuario() {
-		return usuario;
+	public EstadoAsistencia getEstado() {
+		return estado;
 	}
 
-	public void setUsuario(Usuario usuario) {
-		this.usuario = usuario;
+	public void setEstado(EstadoAsistencia estado) {
+		this.estado = estado;
+	}
+
+	public Usuario getAsistente() {
+		return asistente;
+	}
+
+	public void setAsistente(Usuario asistente) {
+		this.asistente = asistente;
 	}
 
 	public Reserva getReserva() {
@@ -56,6 +72,4 @@ public class Asistencia {
 	public void setReserva(Reserva reserva) {
 		this.reserva = reserva;
 	}
-	
-	
 }
