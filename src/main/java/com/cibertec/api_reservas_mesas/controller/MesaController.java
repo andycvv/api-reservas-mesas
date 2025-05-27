@@ -1,9 +1,11 @@
 package com.cibertec.api_reservas_mesas.controller;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cibertec.api_reservas_mesas.dto.MesaCreacionDTO;
@@ -39,6 +42,28 @@ public class MesaController {
 		List<MesaListadoDTO> mesas = new ArrayList<>();
 		
 		for (Mesa m : mesaRepository.findAll()) {
+			MesaListadoDTO dto = new MesaListadoDTO();
+			dto.setId(m.getId());
+			dto.setNumero(m.getNumero());
+			dto.setCapacidad(m.getCapacidad());
+			dto.setEstado(m.getEstado());
+			dto.setUbicacion(m.getUbicacion().getNombre());
+			
+			mesas.add(dto);
+		}
+		
+		return ResponseEntity.ok(mesas);
+	}
+	
+	@GetMapping("/disponibles")
+	public ResponseEntity<List<MesaListadoDTO>> getDisponibles(
+	           @RequestParam("fecha") LocalDate fecha,
+	           @RequestParam("horarioId") Integer horarioId,
+	           @RequestParam("capacidad") int capacidad
+	) {
+		List<MesaListadoDTO> mesas = new ArrayList<>();
+		
+		for (Mesa m : mesaRepository.findMesasDisponibles(fecha, horarioId, capacidad)) {
 			MesaListadoDTO dto = new MesaListadoDTO();
 			dto.setId(m.getId());
 			dto.setNumero(m.getNumero());
