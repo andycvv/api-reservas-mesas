@@ -46,6 +46,25 @@ public class HorarioController {
 		return ResponseEntity.ok(horarios);
 	}
 	
+	@GetMapping("/activos")
+	public ResponseEntity<List<HorarioDTO>> getActivos() {
+		List<HorarioDTO> horarios = new ArrayList<>();
+		
+		for (Horario h : horarioRepository.findAll()) {
+			if(h.getEstado()) {
+				HorarioDTO dto = new HorarioDTO();
+				dto.setId(h.getId());
+				dto.setHoraInicio(h.getHoraInicio());
+				dto.setHoraFin(h.getHoraFin());
+				dto.setEstado(h.getEstado());
+				
+				horarios.add(dto);
+			}
+		}
+		
+		return ResponseEntity.ok(horarios);
+	}
+	
 	@GetMapping("/{id}")
 	public ResponseEntity<HorarioDTO> getById(@PathVariable int id) {
 		Horario horario = horarioRepository.findById(id).orElse(null);
