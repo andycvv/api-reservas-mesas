@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 
 @Entity
 public class Reserva {
@@ -24,11 +25,14 @@ public class Reserva {
 	private LocalDate fecha;
 	@Enumerated(EnumType.STRING)
 	private EstadoReserva estado;
-	private String codigoReserva;
 	
 	@ManyToOne
-	@JoinColumn(name = "usuario_id")
-	private Usuario usuario;
+	@JoinColumn(name = "cliente_id")
+	private Usuario cliente;
+	
+	@ManyToOne
+	@JoinColumn(name = "asistente_id")
+	private Usuario asistente;
 	
 	@ManyToOne
 	@JoinColumn(name = "mesa_id")
@@ -38,9 +42,9 @@ public class Reserva {
 	@JoinColumn(name = "horario_id")
 	private Horario horario;
 	
-	@OneToMany(mappedBy = "reserva")
+	@OneToOne(mappedBy = "reserva")
 	@JsonIgnore
-	private List<Asistencia> asistencias;
+	private Asistencia asistencia;
 
 	public Integer getId() {
 		return id;
@@ -66,20 +70,20 @@ public class Reserva {
 		this.estado = estado;
 	}
 
-	public String getCodigoReserva() {
-		return codigoReserva;
+	public Usuario getCliente() {
+		return cliente;
 	}
 
-	public void setCodigoReserva(String codigoReserva) {
-		this.codigoReserva = codigoReserva;
+	public void setCliente(Usuario cliente) {
+		this.cliente = cliente;
 	}
 
-	public Usuario getUsuario() {
-		return usuario;
+	public Usuario getAsistente() {
+		return asistente;
 	}
 
-	public void setUsuario(Usuario usuario) {
-		this.usuario = usuario;
+	public void setAsistente(Usuario asistente) {
+		this.asistente = asistente;
 	}
 
 	public Mesa getMesa() {
@@ -98,13 +102,11 @@ public class Reserva {
 		this.horario = horario;
 	}
 
-	public List<Asistencia> getAsistencias() {
-		return asistencias;
+	public Asistencia getAsistencia() {
+		return asistencia;
 	}
 
-	public void setAsistencias(List<Asistencia> asistencias) {
-		this.asistencias = asistencias;
+	public void setAsistencia(Asistencia asistencia) {
+		this.asistencia = asistencia;
 	}
-	
-	
 }

@@ -27,11 +27,15 @@ public class Usuario {
 	@Enumerated(EnumType.STRING)
 	private Rol rol;
 
-	@OneToMany(mappedBy = "usuario")
+	@OneToMany(mappedBy = "cliente")
 	@JsonIgnore
-	private List<Reserva> reservas;
+	private List<Reserva> reservasCliente;
+	
+	@OneToMany(mappedBy = "asistente")
+	@JsonIgnore
+	private List<Reserva> reservasConfirmadas;
 
-	@OneToMany(mappedBy = "usuario")
+	@OneToMany(mappedBy = "asistente")
 	@JsonIgnore
 	private List<Asistencia> asistencias;
 
@@ -107,12 +111,20 @@ public class Usuario {
 		this.rol = rol;
 	}
 
-	public List<Reserva> getReservas() {
-		return reservas;
+	public List<Reserva> getReservasCliente() {
+		return reservasCliente;
 	}
 
-	public void setReservas(List<Reserva> reservas) {
-		this.reservas = reservas;
+	public void setReservasCliente(List<Reserva> reservasCliente) {
+		this.reservasCliente = reservasCliente;
+	}
+
+	public List<Reserva> getReservasConfirmadas() {
+		return reservasConfirmadas;
+	}
+
+	public void setReservasConfirmadas(List<Reserva> reservasConfirmadas) {
+		this.reservasConfirmadas = reservasConfirmadas;
 	}
 
 	public List<Asistencia> getAsistencias() {
@@ -122,6 +134,4 @@ public class Usuario {
 	public void setAsistencias(List<Asistencia> asistencias) {
 		this.asistencias = asistencias;
 	}
-	
-	
 }
