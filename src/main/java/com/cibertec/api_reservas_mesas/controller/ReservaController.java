@@ -108,7 +108,7 @@ public class ReservaController {
 		return ResponseEntity.ok().build();
 	}
 	
-	@PatchMapping("/{id}")
+	@PatchMapping("/estado/{id}")
 	public ResponseEntity<?> patch(@PathVariable int id, @RequestBody @Valid ReservaEstadoDTO reservaEstadoDTO){
 		Reserva reserva = reservaRepository.findById(id).orElse(null);
 		
