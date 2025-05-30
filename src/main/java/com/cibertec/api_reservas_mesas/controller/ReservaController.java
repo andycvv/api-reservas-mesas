@@ -119,7 +119,7 @@ public class ReservaController {
 		reserva.setEstado(reservaEstadoDTO.getEstado());
 		reservaRepository.save(reserva);
 		
-		return ResponseEntity.ok("Reserva actualizada correctamente");
+		return ResponseEntity.ok().build();
 	}
 	
 }
