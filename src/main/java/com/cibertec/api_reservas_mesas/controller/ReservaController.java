@@ -1,16 +1,23 @@
 package com.cibertec.api_reservas_mesas.controller;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cibertec.api_reservas_mesas.dto.ReservaCreacionDTO;
+import com.cibertec.api_reservas_mesas.dto.ReservaEstadoDTO;
+import com.cibertec.api_reservas_mesas.dto.ReservaListadoDTO;
 import com.cibertec.api_reservas_mesas.model.EstadoReserva;
 import com.cibertec.api_reservas_mesas.model.Horario;
 import com.cibertec.api_reservas_mesas.model.Mesa;
@@ -35,6 +42,11 @@ public class ReservaController {
 	private MesaRepository mesaRepository;
 	@Autowired
 	private HorarioRepository horarioRepository;
+	
+	@GetMapping
+	public ResponseEntity<List<ReservaListadoDTO>> get(){
+		return ResponseEntity.ok(reservaRepository.listarReservasPendientesDeHoy());
+	}
 	
 	@PostMapping
 	public ResponseEntity<?> post(@RequestBody @Valid ReservaCreacionDTO dto) {
@@ -95,4 +107,19 @@ public class ReservaController {
 		reservaRepository.save(reserva);
 		return ResponseEntity.ok().build();
 	}
+	
+	@PatchMapping("/{id}")
+	public ResponseEntity<?> patch(@PathVariable int id, @RequestBody @Valid ReservaEstadoDTO reservaEstadoDTO){
+		Reserva reserva = reservaRepository.findById(id).orElse(null);
+		
+		if (reserva == null) {
+			return ResponseEntity.notFound().build();
+		}
+		
+		reserva.setEstado(reservaEstadoDTO.getEstado());
+		reservaRepository.save(reserva);
+		
+		return ResponseEntity.ok("Reserva actualizada correctamente");
+	}
+	
 }
