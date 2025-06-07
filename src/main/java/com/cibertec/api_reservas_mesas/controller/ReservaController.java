@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cibertec.api_reservas_mesas.dto.ReservaConsultaDTO;
 import com.cibertec.api_reservas_mesas.dto.ReservaCreacionDTO;
 import com.cibertec.api_reservas_mesas.dto.ReservaEstadoDTO;
 import com.cibertec.api_reservas_mesas.dto.ReservaListadoDTO;
@@ -43,9 +44,14 @@ public class ReservaController {
 	@Autowired
 	private HorarioRepository horarioRepository;
 	
-	@GetMapping
-	public ResponseEntity<List<ReservaListadoDTO>> get(){
+	@GetMapping("/hoy")
+	public ResponseEntity<List<ReservaListadoDTO>> getHoy(){
 		return ResponseEntity.ok(reservaRepository.listarReservasPendientesDeHoy());
+	}
+	
+	@GetMapping("/cliente/{id}")
+	public ResponseEntity<List<ReservaConsultaDTO>> getPorCliente(@PathVariable Integer id){
+		return ResponseEntity.ok(reservaRepository.listarReservasPorClienteId(id));
 	}
 	
 	@PostMapping
