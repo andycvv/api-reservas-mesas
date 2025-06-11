@@ -23,8 +23,8 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer>{
 		       "JOIN r.horario h " +
 		       "JOIN r.mesa m " +
 		       "WHERE r.estado = com.cibertec.api_reservas_mesas.model.EstadoReserva.PENDIENTE " +
-		       "AND r.fecha = CURRENT_DATE")
-	List<ReservaListadoDTO> listarReservasPendientesDeHoy();
+		       "AND r.fecha >= CURRENT_DATE")
+	List<ReservaListadoDTO> listarReservasPendientes();
 	
 	@Query("SELECT new com.cibertec.api_reservas_mesas.dto.ReservaConsultaDTO(r.id, r.fecha, h.horaInicio, h.horaFin, m.numero, m.capacidad, r.estado) " +
 	           "FROM Reserva r " +
