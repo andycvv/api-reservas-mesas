@@ -44,9 +44,9 @@ public class ReservaController {
 	@Autowired
 	private HorarioRepository horarioRepository;
 	
-	@GetMapping("/hoy")
-	public ResponseEntity<List<ReservaListadoDTO>> getHoy(){
-		return ResponseEntity.ok(reservaRepository.listarReservasPendientesDeHoy());
+	@GetMapping("/pendientes")
+	public ResponseEntity<List<ReservaListadoDTO>> getPendientes(){
+		return ResponseEntity.ok(reservaRepository.listarReservasPendientes());
 	}
 	
 	@GetMapping("/cliente/{id}")

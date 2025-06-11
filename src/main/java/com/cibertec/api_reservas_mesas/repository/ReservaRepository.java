@@ -23,8 +23,8 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer>{
 		       "JOIN r.horario h " +
 		       "JOIN r.mesa m " +
 		       "WHERE r.estado = com.cibertec.api_reservas_mesas.model.EstadoReserva.PENDIENTE " +
-		       "AND r.fecha = CURRENT_DATE")
-	List<ReservaListadoDTO> listarReservasPendientesDeHoy();
+		       "AND r.fecha >= CURRENT_DATE")
+	List<ReservaListadoDTO> listarReservasPendientes();
 	
 	@Query("SELECT new com.cibertec.api_reservas_mesas.dto.ReservaConsultaDTO(r.id, r.fecha, h.horaInicio, h.horaFin, m.numero, m.capacidad, r.estado) " +
 	           "FROM Reserva r " +
@@ -32,4 +32,15 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer>{
 	           "JOIN r.mesa m " +
 	           "WHERE r.cliente.id = :id")
 	List<ReservaConsultaDTO> listarReservasPorClienteId(@Param("id") Integer id);
+	
+    @Query("SELECT COUNT(r) FROM Reserva r WHERE r.fecha BETWEEN :inicio AND :fin")
+    int contarTotalReservas(@Param("inicio") LocalDate inicio, @Param("fin") LocalDate fin);
+
+    @Query("SELECT COUNT(r) FROM Reserva r WHERE r.estado = 'CANCELADA' AND r.fecha BETWEEN :inicio AND :fin")
+    int contarCancelaciones(@Param("inicio") LocalDate inicio, @Param("fin") LocalDate fin);
+
+    @Query("SELECT FUNCTION('DAYOFWEEK', r.fecha), COUNT(r) " +
+           "FROM Reserva r WHERE r.fecha BETWEEN :inicio AND :fin " +
+           "GROUP BY FUNCTION('DAYOFWEEK', r.fecha)")
+    List<Object[]> contarReservasPorDia(@Param("inicio") LocalDate inicio, @Param("fin") LocalDate fin);
 }
