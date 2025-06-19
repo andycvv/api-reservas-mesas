@@ -6,6 +6,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,7 +27,7 @@ import com.cibertec.api_reservas_mesas.model.EstadoReserva;
 import com.cibertec.api_reservas_mesas.model.Horario;
 import com.cibertec.api_reservas_mesas.model.Mesa;
 import com.cibertec.api_reservas_mesas.model.Reserva;
-import com.cibertec.api_reservas_mesas.model.Rol;
+import com.cibertec.api_reservas_mesas.model.ERol;
 import com.cibertec.api_reservas_mesas.model.Usuario;
 import com.cibertec.api_reservas_mesas.repository.HorarioRepository;
 import com.cibertec.api_reservas_mesas.repository.MesaRepository;
@@ -45,26 +49,39 @@ public class ReservaController {
 	private HorarioRepository horarioRepository;
 	
 	@GetMapping("/pendientes")
+	@PreAuthorize("hasRole('RECEPCIONISTA')")
 	public ResponseEntity<List<ReservaListadoDTO>> getPendientes(){
 		return ResponseEntity.ok(reservaRepository.listarReservasPendientes());
 	}
 	
-	@GetMapping("/cliente/{id}")
-	public ResponseEntity<List<ReservaConsultaDTO>> getPorCliente(@PathVariable Integer id){
-		return ResponseEntity.ok(reservaRepository.listarReservasPorClienteId(id));
+	@GetMapping("/mis-reservas")
+	@PreAuthorize("hasRole('CLIENTE')")
+	public ResponseEntity<List<ReservaConsultaDTO>> getPorCliente(Authentication authentication){
+		String dni = authentication.getName();
+		
+		Usuario u = usuarioRepository.findByDni(dni).orElseThrow(() -> new 
+				UsernameNotFoundException("Usuario no encontrado con DNI: " + dni));
+		
+		return ResponseEntity.ok(reservaRepository.listarReservasPorClienteId(u.getId()));
 	}
 	
 	@PostMapping
-	public ResponseEntity<?> post(@RequestBody @Valid ReservaCreacionDTO dto) {
-		Usuario cliente = usuarioRepository.findById(dto.getClienteId()).orElse(null);
-		if (cliente == null) {
-			return ResponseEntity.notFound().build();
-		}
-		if (!cliente.getRol().equals(Rol.CLIENTE)) {
-		    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-		        .body("El usuario no tiene rol de CLIENTE");
-		}
+	@PreAuthorize("hasRole('CLIENTE')")
+	public ResponseEntity<?> post(@RequestBody @Valid ReservaCreacionDTO dto, 
+			Authentication authentication) {
 		
+	    String dni = authentication.getName();
+
+	    Usuario u = usuarioRepository.findByDni(dni)
+	        .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con DNI: " + dni));
+		
+	    long cantidadPendientes = reservaRepository.countByClienteIdAndEstado(u.getId(), EstadoReserva.PENDIENTE);
+
+	    if (cantidadPendientes >= 3) {
+	        return ResponseEntity.badRequest()
+	            .body("No puede registrar más reservas. Ya tiene 3 reservas pendientes.");
+	    }
+	    
         if (dto.getFecha().isBefore(LocalDate.now())) {
             return ResponseEntity.badRequest()
             		.body("No se puede reservar en una fecha pasada.");
@@ -106,7 +123,7 @@ public class ReservaController {
 		Reserva reserva = new Reserva();
 		reserva.setFecha(dto.getFecha());
 		reserva.setEstado(EstadoReserva.PENDIENTE);
-		reserva.setCliente(cliente);
+		reserva.setCliente(u);
 		reserva.setHorario(horario);
 		reserva.setMesa(mesa);
 		
@@ -115,6 +132,7 @@ public class ReservaController {
 	}
 	
 	@PatchMapping("/estado/{id}")
+	@PreAuthorize("hasRole('RECEPCIONISTA')")
 	public ResponseEntity<?> patch(@PathVariable int id, @RequestBody @Valid ReservaEstadoDTO reservaEstadoDTO){
 		Reserva reserva = reservaRepository.findById(id).orElse(null);
 		
@@ -123,6 +141,21 @@ public class ReservaController {
 		}
 		
 		reserva.setEstado(reservaEstadoDTO.getEstado());
+		reservaRepository.save(reserva);
+		
+		return ResponseEntity.ok().build();
+	}
+	
+	@PatchMapping("/cancelar/{id}")
+	@PreAuthorize("hasRole('CLIENTE')")
+	public ResponseEntity<?> cancelar(@PathVariable int id){
+		Reserva reserva = reservaRepository.findById(id).orElse(null);
+		
+		if (reserva == null) {
+			return ResponseEntity.notFound().build();
+		}
+		
+		reserva.setEstado(EstadoReserva.CANCELADA);
 		reservaRepository.save(reserva);
 		
 		return ResponseEntity.ok().build();
