@@ -31,7 +31,7 @@ public class Usuario {
 
 	@ManyToMany(fetch = FetchType.EAGER, targetEntity = Rol.class, cascade = CascadeType.PERSIST)
 	@JoinTable(
-			name = "usario_roles", 
+			name = "usuario_roles", 
 			joinColumns = @JoinColumn(name = "usuario_id"),
 			inverseJoinColumns = @JoinColumn(name = "rol_id")
 	)

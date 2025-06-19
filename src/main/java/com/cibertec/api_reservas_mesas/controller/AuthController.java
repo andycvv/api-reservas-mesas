@@ -40,6 +40,11 @@ public class AuthController {
 		
 		if (rol == null) return ResponseEntity.badRequest().build();
 		
+		Optional<Usuario> existente = usuarioRepository.findByDni(dto.getDni());
+	    if (existente.isPresent()) {
+	        return ResponseEntity.badRequest().body("Ya existe un usuario con ese DNI");
+	    }
+		
         Usuario usuario = new Usuario();
         usuario.setNombre(dto.getNombre());
         usuario.setClave(passwordEncoder.encode(dto.getClave()));
