@@ -57,10 +57,10 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 	    CorsConfiguration configuration = new CorsConfiguration();
-	    configuration.addAllowedOrigin("http://localhost:4200"); // Cambia esto si tu frontend está en otra URL
+	    configuration.addAllowedOrigin("http://localhost:4200");
 	    configuration.addAllowedMethod("*");
 	    configuration.addAllowedHeader("*");
-	    configuration.setAllowCredentials(true); // si usas cookies o Authorization: Bearer
+	    configuration.setAllowCredentials(true);
 
 	    org.springframework.web.cors.UrlBasedCorsConfigurationSource source = 
 	        new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
