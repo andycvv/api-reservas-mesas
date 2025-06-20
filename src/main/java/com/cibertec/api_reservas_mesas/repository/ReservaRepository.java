@@ -11,10 +11,13 @@ import org.springframework.stereotype.Repository;
 import com.cibertec.api_reservas_mesas.dto.ReservaConsultaDTO;
 import com.cibertec.api_reservas_mesas.dto.ReservaListadoDTO;
 import com.cibertec.api_reservas_mesas.model.Reserva;
+import com.cibertec.api_reservas_mesas.model.EstadoReserva;
+
 
 @Repository
 public interface ReservaRepository extends JpaRepository<Reserva, Integer>{
 	boolean existsByMesaIdAndFechaAndHorarioId(Integer mesaId, LocalDate fecha, Integer horarioId);
+	Integer countByClienteIdAndEstado(Integer clienteId, EstadoReserva estado);
 	
 	@Query("SELECT new com.cibertec.api_reservas_mesas.dto.ReservaListadoDTO(" +
 		       "r.id, c.nombre, c.dni, c.telefono, r.fecha, h.horaInicio, h.horaFin, m.numero, m.capacidad) " +

@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,6 +39,7 @@ public class MesaController {
 	private UbicacionRepository ubicacionRepository;
 	
 	@GetMapping
+	@PreAuthorize("hasAnyRole('ADMINISTRADOR', 'RECEPCIONISTA')")
 	public ResponseEntity<List<MesaListadoDTO>> get() {
 		List<MesaListadoDTO> mesas = new ArrayList<>();
 		
@@ -56,6 +58,7 @@ public class MesaController {
 	}
 	
 	@GetMapping("/disponibles")
+	@PreAuthorize("hasRole('CLIENTE')")
 	public ResponseEntity<List<MesaListadoDTO>> getDisponibles(
 	           @RequestParam("fecha") LocalDate fecha,
 	           @RequestParam("horarioId") Integer horarioId,
@@ -78,6 +81,7 @@ public class MesaController {
 	}
 	
 	@GetMapping("/{id}")
+	@PreAuthorize("hasRole('ADMINISTRADOR')")
 	public ResponseEntity<MesaDTO> getId(@PathVariable int id) {
 		Mesa m = mesaRepository.findById(id).orElse(null);
 		
@@ -96,6 +100,7 @@ public class MesaController {
 	}
 	
 	@PostMapping
+	@PreAuthorize("hasRole('ADMINISTRADOR')")
 	public ResponseEntity<Void> post(@RequestBody @Valid MesaCreacionDTO mesaCreacionDTO) {
 		Ubicacion u = ubicacionRepository
 				.findById(mesaCreacionDTO.getUbicacionId())
@@ -118,6 +123,7 @@ public class MesaController {
 	}
 	
 	@PutMapping("/{id}")
+	@PreAuthorize("hasRole('ADMINISTRADOR')")
 	public ResponseEntity<Void> put(@PathVariable int id, @RequestBody @Valid MesaEdicionDTO mesaEdicionDTO){
 		Mesa m = mesaRepository.findById(id).orElse(null);
 		
@@ -142,6 +148,7 @@ public class MesaController {
 	}
 	
 	@DeleteMapping("/{id}")
+	@PreAuthorize("hasRole('ADMINISTRADOR')")
 	public ResponseEntity<Void> delete(@PathVariable int id) {
 		Mesa m = mesaRepository.findById(id).orElse(null);
 		

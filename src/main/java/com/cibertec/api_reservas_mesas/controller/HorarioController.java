@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +31,7 @@ public class HorarioController {
 	private HorarioRepository horarioRepository;
 	
 	@GetMapping
+	@PreAuthorize("hasRole('ADMINISTRADOR')")
 	public ResponseEntity<List<HorarioDTO>> get() {
 		List<HorarioDTO> horarios = new ArrayList<>();
 		
@@ -47,6 +49,7 @@ public class HorarioController {
 	}
 	
 	@GetMapping("/activos")
+	@PreAuthorize("hasAnyRole('CLIENTE', 'ADMINISTRADOR')")
 	public ResponseEntity<List<HorarioDTO>> getActivos() {
 		List<HorarioDTO> horarios = new ArrayList<>();
 		
@@ -66,6 +69,7 @@ public class HorarioController {
 	}
 	
 	@GetMapping("/{id}")
+	@PreAuthorize("hasRole('ADMINISTRADOR')")
 	public ResponseEntity<HorarioDTO> getById(@PathVariable int id) {
 		Horario horario = horarioRepository.findById(id).orElse(null);
 		
@@ -83,6 +87,7 @@ public class HorarioController {
 	}
 	
 	@PostMapping
+	@PreAuthorize("hasRole('ADMINISTRADOR')")
 	public ResponseEntity<Void> post(@RequestBody @Valid HorarioCreacionDTO horarioCreacionDTO) {
 		if (!horarioCreacionDTO.getHoraInicio().isBefore(horarioCreacionDTO.getHoraFin())) {
 			throw new RangoHorarioInvalidoException("horaInicio", 
@@ -99,6 +104,7 @@ public class HorarioController {
 	}
 	
 	@PutMapping("/{id}")
+	@PreAuthorize("hasRole('ADMINISTRADOR')")
 	public ResponseEntity<Void> put(@PathVariable int id, @RequestBody @Valid HorarioEdicionDTO horarioEdicionDTO) {
 		Horario horario = horarioRepository.findById(id).orElse(null);
 		
@@ -115,6 +121,7 @@ public class HorarioController {
 	}
 	
 	@DeleteMapping("/{id}")
+	@PreAuthorize("hasRole('ADMINISTRADOR')")
 	public ResponseEntity<Void> delete(@PathVariable int id) {
 		Horario horario = horarioRepository.findById(id).orElse(null);
 		
