@@ -45,10 +45,6 @@ public class Usuario {
 	@JsonIgnore
 	private List<Reserva> reservasConfirmadas;
 
-	@OneToMany(mappedBy = "asistente")
-	@JsonIgnore
-	private List<Asistencia> asistencias;
-
 	public Integer getId() {
 		return id;
 	}
@@ -135,13 +131,5 @@ public class Usuario {
 
 	public void setReservasConfirmadas(List<Reserva> reservasConfirmadas) {
 		this.reservasConfirmadas = reservasConfirmadas;
-	}
-
-	public List<Asistencia> getAsistencias() {
-		return asistencias;
-	}
-
-	public void setAsistencias(List<Asistencia> asistencias) {
-		this.asistencias = asistencias;
 	}
 }

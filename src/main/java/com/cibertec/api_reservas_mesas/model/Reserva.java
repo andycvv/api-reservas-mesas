@@ -41,10 +41,6 @@ public class Reserva {
 	@ManyToOne
 	@JoinColumn(name = "horario_id")
 	private Horario horario;
-	
-	@OneToOne(mappedBy = "reserva")
-	@JsonIgnore
-	private Asistencia asistencia;
 
 	public Integer getId() {
 		return id;
@@ -100,13 +96,5 @@ public class Reserva {
 
 	public void setHorario(Horario horario) {
 		this.horario = horario;
-	}
-
-	public Asistencia getAsistencia() {
-		return asistencia;
-	}
-
-	public void setAsistencia(Asistencia asistencia) {
-		this.asistencia = asistencia;
 	}
 }
