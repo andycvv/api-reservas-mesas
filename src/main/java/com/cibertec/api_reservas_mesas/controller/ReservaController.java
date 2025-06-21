@@ -133,7 +133,13 @@ public class ReservaController {
 	
 	@PatchMapping("/estado/{id}")
 	@PreAuthorize("hasRole('RECEPCIONISTA')")
-	public ResponseEntity<?> patch(@PathVariable int id, @RequestBody @Valid ReservaEstadoDTO reservaEstadoDTO){
+	public ResponseEntity<?> patch(@PathVariable int id, Authentication authentication,
+			@RequestBody @Valid ReservaEstadoDTO reservaEstadoDTO){
+	    String dni = authentication.getName();
+
+	    Usuario u = usuarioRepository.findByDni(dni)
+	        .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con DNI: " + dni));
+		
 		Reserva reserva = reservaRepository.findById(id).orElse(null);
 		
 		if (reserva == null) {
@@ -141,6 +147,7 @@ public class ReservaController {
 		}
 		
 		reserva.setEstado(reservaEstadoDTO.getEstado());
+		reserva.setAsistente(u);
 		reservaRepository.save(reserva);
 		
 		return ResponseEntity.ok().build();
