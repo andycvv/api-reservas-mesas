@@ -1,10 +1,15 @@
 package com.cibertec.api_reservas_mesas.controller;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,10 +27,14 @@ import com.cibertec.api_reservas_mesas.dto.MesaCreacionDTO;
 import com.cibertec.api_reservas_mesas.dto.MesaDTO;
 import com.cibertec.api_reservas_mesas.dto.MesaEdicionDTO;
 import com.cibertec.api_reservas_mesas.dto.MesaListadoDTO;
+import com.cibertec.api_reservas_mesas.dto.PageableResponse;
+import com.cibertec.api_reservas_mesas.mapper.PageableMapper;
 import com.cibertec.api_reservas_mesas.model.Mesa;
 import com.cibertec.api_reservas_mesas.model.Ubicacion;
 import com.cibertec.api_reservas_mesas.repository.MesaRepository;
 import com.cibertec.api_reservas_mesas.repository.UbicacionRepository;
+import com.cibertec.api_reservas_mesas.repository.ReservaRepository;
+import com.cibertec.api_reservas_mesas.exception.RegistroEnUsoException;
 
 import jakarta.validation.Valid;
 
@@ -37,24 +46,45 @@ public class MesaController {
 	private MesaRepository mesaRepository;
 	@Autowired
 	private UbicacionRepository ubicacionRepository;
+	@Autowired
+	private ReservaRepository reservaRepository;
+	@Autowired
+	private PageableMapper pageableMapper;
 	
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ADMINISTRADOR', 'RECEPCIONISTA')")
-	public ResponseEntity<List<MesaListadoDTO>> get() {
-		List<MesaListadoDTO> mesas = new ArrayList<>();
-		
-		for (Mesa m : mesaRepository.findAll()) {
+	public ResponseEntity<PageableResponse<MesaListadoDTO>> get(
+			@PageableDefault(size = 10, sort = "numero", direction = Direction.ASC) Pageable pageable
+	) {
+		Page<Mesa> page = mesaRepository.findAll(pageable);
+		Page<MesaListadoDTO> dtoPage = page.map(m -> {
 			MesaListadoDTO dto = new MesaListadoDTO();
 			dto.setId(m.getId());
 			dto.setNumero(m.getNumero());
 			dto.setCapacidad(m.getCapacidad());
 			dto.setEstado(m.getEstado());
 			dto.setUbicacion(m.getUbicacion().getNombre());
-			
-			mesas.add(dto);
-		}
+			return dto;
+		});
+		return ResponseEntity.ok(pageableMapper.toPaginacionResponse(dtoPage));
+	}
+	
+	@GetMapping("/activos")
+	@PreAuthorize("hasAnyRole('ADMINISTRADOR')")
+	public ResponseEntity<List<MesaListadoDTO>> getActivos() {
+		List<Mesa> mesas = mesaRepository.findByEstadoTrue();
 		
-		return ResponseEntity.ok(mesas);
+		List<MesaListadoDTO> mesasDTO = mesas.stream().map(m -> {
+			MesaListadoDTO dto = new MesaListadoDTO();
+			dto.setId(m.getId());
+			dto.setNumero(m.getNumero());
+			dto.setCapacidad(m.getCapacidad());
+			dto.setEstado(m.getEstado());
+			dto.setUbicacion(m.getUbicacion().getNombre());
+			return dto;
+		}).toList();
+		
+		return ResponseEntity.ok(mesasDTO);
 	}
 	
 	@GetMapping("/disponibles")
@@ -64,20 +94,17 @@ public class MesaController {
 	           @RequestParam("horarioId") Integer horarioId,
 	           @RequestParam("capacidad") int capacidad
 	) {
-		List<MesaListadoDTO> mesas = new ArrayList<>();
-		
-		for (Mesa m : mesaRepository.findMesasDisponibles(fecha, horarioId, capacidad)) {
+		List<Mesa> mesas = mesaRepository.findMesasDisponibles(fecha, horarioId, capacidad);
+		List<MesaListadoDTO> mesasDTO = mesas.stream().map(m -> {
 			MesaListadoDTO dto = new MesaListadoDTO();
 			dto.setId(m.getId());
 			dto.setNumero(m.getNumero());
 			dto.setCapacidad(m.getCapacidad());
 			dto.setEstado(m.getEstado());
 			dto.setUbicacion(m.getUbicacion().getNombre());
-			
-			mesas.add(dto);
-		}
-		
-		return ResponseEntity.ok(mesas);
+			return dto;
+		}).toList();
+		return ResponseEntity.ok(mesasDTO);
 	}
 	
 	@GetMapping("/{id}")
@@ -154,6 +181,10 @@ public class MesaController {
 		
 		if (m == null) {
 			return ResponseEntity.notFound().build();
+		}
+
+		if (reservaRepository.existsByMesaId(id)) {
+			throw new RegistroEnUsoException("Mesa", id, "No se puede eliminar: hay reservas asociadas a esta mesa.");
 		}
 		
 		mesaRepository.deleteById(id);

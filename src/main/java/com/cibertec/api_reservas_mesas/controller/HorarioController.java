@@ -1,9 +1,14 @@
 package com.cibertec.api_reservas_mesas.controller;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,9 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cibertec.api_reservas_mesas.dto.HorarioCreacionDTO;
 import com.cibertec.api_reservas_mesas.dto.HorarioDTO;
 import com.cibertec.api_reservas_mesas.dto.HorarioEdicionDTO;
+import com.cibertec.api_reservas_mesas.dto.PageableResponse;
+import com.cibertec.api_reservas_mesas.mapper.PageableMapper;
 import com.cibertec.api_reservas_mesas.exception.RangoHorarioInvalidoException;
 import com.cibertec.api_reservas_mesas.model.Horario;
 import com.cibertec.api_reservas_mesas.repository.HorarioRepository;
+import com.cibertec.api_reservas_mesas.repository.ReservaRepository;
+import com.cibertec.api_reservas_mesas.exception.RegistroEnUsoException;
 
 import jakarta.validation.Valid;
 
@@ -29,43 +38,43 @@ import jakarta.validation.Valid;
 public class HorarioController {
 	@Autowired
 	private HorarioRepository horarioRepository;
+    @Autowired
+    private ReservaRepository reservaRepository;
+    @Autowired
+    private PageableMapper pageableMapper;
 	
 	@GetMapping
 	@PreAuthorize("hasRole('ADMINISTRADOR')")
-	public ResponseEntity<List<HorarioDTO>> get() {
-		List<HorarioDTO> horarios = new ArrayList<>();
-		
-		for (Horario h : horarioRepository.findAll()) {
+	public ResponseEntity<PageableResponse<HorarioDTO>> get(
+			@PageableDefault(size = 10, sort = "horaInicio", direction = Direction.ASC) Pageable pageable
+	) {
+		Page<Horario> page = horarioRepository.findAll(pageable);
+		Page<HorarioDTO> dtoPage = page.map(h -> {
 			HorarioDTO dto = new HorarioDTO();
 			dto.setId(h.getId());
 			dto.setHoraInicio(h.getHoraInicio());
 			dto.setHoraFin(h.getHoraFin());
 			dto.setEstado(h.getEstado());
-			
-			horarios.add(dto);
-		}
-		
-		return ResponseEntity.ok(horarios);
+			return dto;
+		});
+		return ResponseEntity.ok(pageableMapper.toPaginacionResponse(dtoPage));
 	}
 	
 	@GetMapping("/activos")
 	@PreAuthorize("hasAnyRole('CLIENTE', 'ADMINISTRADOR')")
 	public ResponseEntity<List<HorarioDTO>> getActivos() {
-		List<HorarioDTO> horarios = new ArrayList<>();
+		List<Horario> horarios = horarioRepository.findByEstadoTrue();
 		
-		for (Horario h : horarioRepository.findAll()) {
-			if(h.getEstado()) {
-				HorarioDTO dto = new HorarioDTO();
-				dto.setId(h.getId());
-				dto.setHoraInicio(h.getHoraInicio());
-				dto.setHoraFin(h.getHoraFin());
-				dto.setEstado(h.getEstado());
-				
-				horarios.add(dto);
-			}
-		}
+		List<HorarioDTO> horariosDTO = horarios.stream().map(h -> {
+			HorarioDTO dto = new HorarioDTO();
+			dto.setId(h.getId());
+			dto.setHoraInicio(h.getHoraInicio());
+			dto.setHoraFin(h.getHoraFin());
+			dto.setEstado(h.getEstado());
+			return dto;
+		}).toList();
 		
-		return ResponseEntity.ok(horarios);
+		return ResponseEntity.ok(horariosDTO);
 	}
 	
 	@GetMapping("/{id}")
@@ -127,6 +136,10 @@ public class HorarioController {
 		
 		if (horario == null) {
 			return ResponseEntity.notFound().build();
+		}
+
+		if (reservaRepository.existsByHorarioId(id)) {
+			throw new RegistroEnUsoException("Horario", id, "No se puede eliminar: hay reservas asociadas a este horario.");
 		}
 		
 		horarioRepository.deleteById(horario.getId());

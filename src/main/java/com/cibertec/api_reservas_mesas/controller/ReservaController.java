@@ -4,12 +4,17 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,12 +22,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cibertec.api_reservas_mesas.dto.PageableResponse;
 import com.cibertec.api_reservas_mesas.dto.ReservaConsultaDTO;
 import com.cibertec.api_reservas_mesas.dto.ReservaCreacionDTO;
 import com.cibertec.api_reservas_mesas.dto.ReservaEstadoDTO;
 import com.cibertec.api_reservas_mesas.dto.ReservaListadoDTO;
+import com.cibertec.api_reservas_mesas.mapper.PageableMapper;
 import com.cibertec.api_reservas_mesas.model.EstadoReserva;
 import com.cibertec.api_reservas_mesas.model.Horario;
 import com.cibertec.api_reservas_mesas.model.Mesa;
@@ -47,22 +55,36 @@ public class ReservaController {
 	private MesaRepository mesaRepository;
 	@Autowired
 	private HorarioRepository horarioRepository;
+	@Autowired
+	private PageableMapper pageableMapper;
 	
 	@GetMapping("/pendientes")
 	@PreAuthorize("hasRole('RECEPCIONISTA')")
-	public ResponseEntity<List<ReservaListadoDTO>> getPendientes(){
-		return ResponseEntity.ok(reservaRepository.listarReservasPendientes());
+	public ResponseEntity<PageableResponse<ReservaListadoDTO>> getPendientes(
+			@PageableDefault(size = 10, sort = {"fecha","horario.horaInicio"}, direction = Direction.DESC) Pageable pageable,
+			@RequestParam(required = false) String nombre,
+			@RequestParam(required = false) Integer numero
+	){
+		Page<ReservaListadoDTO> pagina = reservaRepository.listarReservasPendientesFiltros(nombre, numero, pageable);
+		PageableResponse<ReservaListadoDTO> response = pageableMapper.toPaginacionResponse(pagina);
+		return ResponseEntity.ok(response);
 	}
 	
 	@GetMapping("/mis-reservas")
 	@PreAuthorize("hasRole('CLIENTE')")
-	public ResponseEntity<List<ReservaConsultaDTO>> getPorCliente(Authentication authentication){
+	public ResponseEntity<PageableResponse<ReservaConsultaDTO>> getPorCliente(
+			Authentication authentication,
+			@PageableDefault(size = 10, sort = {"fecha","horario.horaInicio"}, direction = Direction.DESC) Pageable pageable,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+			@RequestParam(required = false) EstadoReserva estado
+	){
 		String dni = authentication.getName();
 		
 		Usuario u = usuarioRepository.findByDni(dni).orElseThrow(() -> new 
 				UsernameNotFoundException("Usuario no encontrado con DNI: " + dni));
 		
-		return ResponseEntity.ok(reservaRepository.listarReservasPorClienteId(u.getId()));
+		Page<ReservaConsultaDTO> pagina = reservaRepository.listarReservasPorClienteIdFiltros(u.getId(), fecha, estado, pageable);
+		return ResponseEntity.ok(pageableMapper.toPaginacionResponse(pagina));
 	}
 	
 	@PostMapping
@@ -87,10 +109,10 @@ public class ReservaController {
             		.body("No se puede reservar en una fecha pasada.");
         }
         
-        if (!dto.getFecha().isAfter(LocalDate.now())) {
-            return ResponseEntity.badRequest()
-            		.body("Solo se permiten reservas con al menos 1 día de anticipación.");
-        }
+//        if (!dto.getFecha().isAfter(LocalDate.now())) {
+//            return ResponseEntity.badRequest()
+//            		.body("Solo se permiten reservas con al menos 1 día de anticipación.");
+//        }
 		
 		Mesa mesa = mesaRepository.findById(dto.getMesaId()).orElse(null);
 		if (mesa == null) {
@@ -107,7 +129,7 @@ public class ReservaController {
 		}
         if (!horario.getEstado()) {
             return ResponseEntity.badRequest()
-            		.body("El horario seleccionado no está activo.");
+                    .body("El horario seleccionado no está activo.");
         }
 		
 	    boolean existeReserva = reservaRepository.existsByMesaIdAndFechaAndHorarioId(

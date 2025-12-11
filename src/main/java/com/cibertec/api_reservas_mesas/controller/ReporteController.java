@@ -45,13 +45,12 @@ public class ReporteController {
         Map<String, Integer> mapaDias = new LinkedHashMap<>();
         List<String> nombresDias = List.of("Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado");
 
-        // Inicializar en cero todos los días
         for (String nombre : nombresDias) {
             mapaDias.put(nombre, 0);
         }
 
         for (Object[] fila : resultados) {
-            int diaNumero = ((Number) fila[0]).intValue(); // 1 = Domingo
+            int diaNumero = ((Number) fila[0]).intValue();
             int cantidad = ((Number) fila[1]).intValue();
             String nombreDia = nombresDias.get(diaNumero - 1);
             mapaDias.put(nombreDia, cantidad);
