@@ -31,8 +31,9 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer>{
 		       "JOIN r.mesa m " +
 		       "WHERE (:nombre IS NULL OR LOWER(c.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) " +
 		       "AND (:numero IS NULL OR m.numero = :numero) " +
-		       "AND r.fecha >= CURRENT_DATE",
-		countQuery = "SELECT COUNT(r) FROM Reserva r JOIN r.cliente c JOIN r.mesa m WHERE (:nombre IS NULL OR LOWER(c.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) AND (:numero IS NULL OR m.numero = :numero) AND r.fecha >= CURRENT_DATE")
+		       "AND r.fecha >= CURRENT_DATE " +
+		       "AND r.estado = com.cibertec.api_reservas_mesas.model.EstadoReserva.PENDIENTE",
+		countQuery = "SELECT COUNT(r) FROM Reserva r JOIN r.cliente c JOIN r.mesa m WHERE (:nombre IS NULL OR LOWER(c.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) AND (:numero IS NULL OR m.numero = :numero) AND r.fecha >= CURRENT_DATE AND r.estado = com.cibertec.api_reservas_mesas.model.EstadoReserva.PENDIENTE")
 	Page<ReservaListadoDTO> listarReservasPendientesFiltros(@Param("nombre") String nombre, @Param("numero") Integer numero, Pageable pageable);
 	
 	@Query(value = "SELECT new com.cibertec.api_reservas_mesas.dto.ReservaConsultaDTO(r.id, r.fecha, h.horaInicio, h.horaFin, m.numero, m.capacidad, r.estado) " +
