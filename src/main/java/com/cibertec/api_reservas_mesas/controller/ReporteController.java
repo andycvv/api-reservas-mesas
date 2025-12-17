@@ -31,9 +31,9 @@ public class ReporteController {
 	) {
 	    LocalDate hoy = LocalDate.now();
 
-	    if (inicio.isAfter(hoy) || fin.isAfter(hoy)) {
-	        return ResponseEntity.badRequest().body("El rango de fechas no puede incluir hoy ni fechas futuras.");
-	    }
+//	    if (inicio.isAfter(hoy) || fin.isAfter(hoy)) {
+//	        return ResponseEntity.badRequest().body("El rango de fechas no puede incluir hoy ni fechas futuras.");
+//	    }
 	    
         int total = reservaRepository.contarTotalReservas(inicio, fin);
         int cancelaciones = reservaRepository.contarCancelaciones(inicio, fin);
